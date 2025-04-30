@@ -72,11 +72,16 @@
 .tooltip {
   position: relative;
   display: inline-block;
+  cursor: help;
+  border-bottom: 1px dotted #333;
+  font-weight: bold;
+  color: #4568dc;
+  margin: 0 5px;
 }
 
 .tooltip .tooltip-text {
   visibility: hidden;
-  width: 200px;
+  width: 300px;
   background-color: #333;
   color: #fff;
   text-align: center;
@@ -86,7 +91,7 @@
   z-index: 1;
   bottom: 125%;
   left: 50%;
-  margin-left: -100px;
+  margin-left: -150px;
   opacity: 0;
   transition: opacity 0.3s;
   font-size: 0.9rem;
@@ -187,4 +192,109 @@
     height: 72px;
     opacity: 0;
   }
+}
+
+/* Tab styling */
+.tab-item {
+  transition: all 0.3s ease;
+}
+
+.tab-item:hover {
+  background-color: rgba(69, 104, 220, 0.05);
+}
+
+/* Footer styling */
+.footer {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background-color: #f8f9fa;
+  border-radius: 12px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+/* Heatmap specific styling */
+.heatmap-container {
+  background-color: #f8f9fa;
+  padding: 15px;
+  border-radius: 12px;
+  margin-top: 10px;
+}
+
+.heatmap-legend {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+  padding: 5px 15px;
+  font-size: 0.8rem;
+}
+
+.heatmap-legend-item {
+  display: flex;
+  align-items: center;
+}
+
+.legend-color {
+  width: 15px;
+  height: 15px;
+  border-radius: 3px;
+  margin-right: 5px;
+}
+
+.low-attention {
+  background-color: #440154;
+}
+
+.medium-attention {
+  background-color: #3b528b;
+}
+
+.high-attention {
+  background-color: #21918c;
+}
+
+.very-high-attention {
+  background-color: #fde725;
+}
+
+/* Model info section */
+.model-info {
+  background-color: rgba(69, 104, 220, 0.05);
+  border-left: 4px solid #4568dc;
+  padding: 10px 15px;
+  margin: 15px 0;
+  border-radius: 0 8px 8px 0;
+  font-size: 0.9rem;
+}
+
+.model-name {
+  font-weight: bold;
+  color: #4568dc;
+}
+
+/* Memory usage indicator */
+.memory-indicator {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  background-color: #e9ecef;
+  color: #495057;
+  margin-left: 10px;
+}
+
+.memory-indicator.high {
+  background-color: #f8d7da;
+  color: #721c24;
+}
+
+.memory-indicator.medium {
+  background-color: #fff3cd;
+  color: #856404;
+}
+
+.memory-indicator.low {
+  background-color: #d4edda;
+  color: #155724;
 }
