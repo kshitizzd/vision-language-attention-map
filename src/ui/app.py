@@ -9,6 +9,8 @@ import time
 import sys
 import traceback
 import gc
+import threading
+import queue
 
 # Add parent directory to path to import modules from sibling directories
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -32,10 +34,14 @@ os.makedirs(os.path.join(project_root, "temp"), exist_ok=True)
 try:
     print("Initializing visualizers...")
     
-    # Initialize vision visualizer
-    vision_model_name = "llava-hf/llava-1.5-7b-hf"
-    print(f"Creating vision visualizer with {vision_model_name}")
-    vision_visualizer = VisionAttentionVisualizer(model_name=vision_model_name)
+    # Initialize vision visualizers (both LLaVA and BLIP)
+    llava_model_name = "llava-hf/llava-1.5-7b-hf"
+    print(f"Creating LLaVA visualizer with {llava_model_name}")
+    llava_visualizer = VisionAttentionVisualizer(model_type="llava", model_name=llava_model_name)
+    
+    blip_model_name = "Salesforce/blip-vqa-base"
+    print(f"Creating BLIP visualizer with {blip_model_name}")
+    blip_visualizer = VisionAttentionVisualizer(model_type="blip", model_name=blip_model_name)
     
     # Initialize text visualizer with a BERT model since it's more suitable for text attention
     text_model_name = "google-bert/bert-base-uncased"
@@ -55,19 +61,20 @@ def figure_to_image(fig):
     image = Image.open(buf)
     return image
 
-def process_image_and_question(image, question):
+def process_image_and_question(image, question, model_choice="llava"):
     """Process the image and question, extract attention visualizations."""
     print("\n--- Starting image and question processing ---")
     print(f"Image type: {type(image)}")
     print(f"Question: {question}")
+    print(f"Model choice: {model_choice}")
 
     if image is None:
         print("Error: Image is None")
-        return "Please upload an image first.", None, None, None, None
-    
+        return "Please upload an image first.", None, None, None, None, None, None
+
     if not question or question.strip() == "":
         print("Error: Question is empty")
-        return "Please enter a question about the image.", None, None, None, None
+        return "Please enter a question about the image.", None, None, None, None, None, None
     
     # Save the uploaded image temporarily
     temp_dir = os.path.join(project_root, "temp")
@@ -80,7 +87,10 @@ def process_image_and_question(image, question):
         image.save(temp_image_path)
         print(f"Image saved successfully, size: {image.size}")
         
-        print("Processing with vision attention visualizer...")
+        # Choose the right visualizer based on model choice
+        vision_visualizer = llava_visualizer if model_choice == "llava" else blip_visualizer
+        
+        print(f"Processing with {model_choice.upper()} attention visualizer...")
         # Process with vision attention visualizer
         original_image, answer, vision_attention_map = vision_visualizer.process_image_and_question(
             temp_image_path, question
@@ -134,7 +144,7 @@ def process_image_and_question(image, question):
         # Vision attention
         plt.subplot(1, 3, 2)
         plt.imshow(vision_attention_image)
-        plt.title("Vision Attention", fontsize=12, fontweight='bold')
+        plt.title(f"{model_choice.upper()} Attention", fontsize=12, fontweight='bold')
         plt.axis('off')
         
         # Add the answer as text
@@ -155,14 +165,14 @@ def process_image_and_question(image, question):
             print("Cleared CUDA cache after processing")
         
         print("Processing complete, returning results")
-        return answer, vision_attention_image, text_attention_image, comparison_image, original_image
+        return answer, vision_attention_image, text_attention_image, comparison_image, original_image, model_choice, question
     
     except Exception as e:
         print(f"ERROR processing image and question: {e}")
         traceback.print_exc()
         # Return a more detailed error message
         error_msg = f"Error: {str(e)}\n\nStack Trace: {traceback.format_exc()}"
-        return error_msg, None, None, None, None
+        return error_msg, None, None, None, None, model_choice, question
     finally:
         # Clean up temp file
         try:
@@ -172,13 +182,10 @@ def process_image_and_question(image, question):
         except Exception as cleanup_error:
             print(f"Error removing temp file: {cleanup_error}")
 
-# Sample questions for the examples
+# Reduced sample questions for the examples
 example_questions = [
     ["What is the main subject of this image?"],
-    ["What colors do you see in this image?"],
-    ["Is there any text visible in this image?"],
-    ["What time of day does this image depict?"],
-    ["Describe the mood or atmosphere of this scene."]
+    ["What colors do you see in this image?"]
 ]
 
 # Sample images for the gallery - use relative paths from current directory
@@ -221,6 +228,10 @@ with gr.Blocks(
         </div>
         """)
     
+    # Store current model choice
+    current_model = gr.State("llava")
+    current_question = gr.State("")
+    
     # Main content
     with gr.Row():
         # Left panel - Input
@@ -234,6 +245,14 @@ with gr.Blocks(
                     label="", 
                     placeholder="What do you want to ask about this image?",
                     lines=2
+                )
+                
+                gr.Markdown("### 🤖 Step 3: Choose Model")
+                model_choice = gr.Radio(
+                    ["llava", "blip"], 
+                    label="Model", 
+                    value="llava",
+                    interactive=True
                 )
                 
                 with gr.Row():
@@ -257,6 +276,7 @@ with gr.Blocks(
         with gr.Column(scale=2):
             with gr.Group(elem_classes="card"):
                 output_answer = gr.Textbox(label="🤖 AI Model's Answer", lines=3, elem_classes="highlight")
+                model_name_display = gr.Textbox(label="Current Model", elem_classes="highlight")
                 
                 with gr.Tabs() as tabs:
                     with gr.TabItem("📊 Attention Overview", elem_classes="tab-item"):
@@ -292,6 +312,11 @@ with gr.Blocks(
                             
                             The heatmap shows which words influence each other in your question, giving insight into how the language model processes and understands your query.
                             """)
+                
+                # Button for switching between models on already processed image
+                with gr.Row():
+                    gr.Markdown("### 🔄 Switch models for the current image")
+                    switch_model_button = gr.Button("Switch to BLIP" if current_model.value == "llava" else "Switch to LLaVA", variant="secondary")
     
     # Error output for debugging
     debug_output = gr.Textbox(label="Debug Information (Error Details)", visible=False, lines=10)
@@ -300,11 +325,11 @@ with gr.Blocks(
     with gr.Row(elem_classes="footer"):
         gr.HTML("""
         <div style="text-align: center; width: 100%;">
-            <p>This app visualizes how vision-language models (LLaVA 1.5) attend to different parts of images and text when answering questions.</p>
+            <p>This app visualizes how vision-language models (LLaVA 1.5 and BLIP) attend to different parts of images and text when answering questions.</p>
             <p>Vision Transformer + Language Model Attention Visualization Project</p>
             <div class="tooltip">
                 About the Models
-                <span class="tooltip-text">Vision attention uses LLaVA 1.5 (Large Language and Vision Assistant), while text attention uses BERT, a powerful language model for understanding text relationships.</span>
+                <span class="tooltip-text">This app supports two vision-language models: LLaVA 1.5 (Large Language and Vision Assistant) and BLIP (Bootstrapping Language-Image Pre-training). Text attention uses BERT, a powerful language model for understanding text relationships.</span>
             </div>
         </div>
         """)
@@ -313,21 +338,64 @@ with gr.Blocks(
     debug_button = gr.Button("Show Debug Info", visible=False)
     
     # Set up event handlers
-    def process_with_debug(image, question):
+    def process_with_timeout(image, question, model_choice, timeout=60):
+        """Process with a timeout to prevent UI freezing"""
+        result_queue = queue.Queue()
+        
+        def target_function():
+            try:
+                result = process_image_and_question(image, question, model_choice)
+                result_queue.put(("success", result))
+            except Exception as e:
+                error = f"Error processing: {str(e)}\n\n{traceback.format_exc()}"
+                result_queue.put(("error", error))
+        
+        thread = threading.Thread(target=target_function)
+        thread.daemon = True
+        thread.start()
+        
         try:
-            answer, vision_img, text_img, comp_img, orig_img = process_image_and_question(image, question)
+            result_type, result = result_queue.get(timeout=timeout)
+            if result_type == "success":
+                return result
+            else:
+                return f"Error: {result}", None, None, None, None, model_choice, question
+        except queue.Empty:
+            return f"Error: Processing timed out after {timeout} seconds. Try a different model or question.", None, None, None, None, model_choice, question
+    
+    def process_with_debug(image, question, model_choice):
+        try:
+            # Use process_with_timeout instead of direct call
+            answer, vision_img, text_img, comp_img, orig_img, model, q = process_with_timeout(image, question, model_choice)
             if isinstance(answer, str) and answer.startswith("Error:"):
                 # Show the debug output if there's an error
-                return answer, vision_img, text_img, comp_img, orig_img, answer, gr.update(visible=True)
-            return answer, vision_img, text_img, comp_img, orig_img, "", gr.update(visible=False)
+                return answer, model.upper(), vision_img, text_img, comp_img, orig_img, answer, gr.update(visible=True), model, q
+            return answer, model.upper(), vision_img, text_img, comp_img, orig_img, "", gr.update(visible=False), model, q
         except Exception as e:
             error_msg = f"Unhandled error: {str(e)}\n\n{traceback.format_exc()}"
-            return f"Error occurred: {str(e)}", None, None, None, None, error_msg, gr.update(visible=True)
+            return f"Error occurred: {str(e)}", model_choice.upper(), None, None, None, None, error_msg, gr.update(visible=True), model_choice, question
     
     submit_button.click(
         fn=process_with_debug,
-        inputs=[input_image, input_question],
-        outputs=[output_answer, output_vision_attention, output_text_attention, output_comparison, output_original, debug_output, debug_output],
+        inputs=[input_image, input_question, model_choice],
+        outputs=[output_answer, model_name_display, output_vision_attention, output_text_attention, output_comparison, output_original, debug_output, debug_output, current_model, current_question],
+    )
+    
+    def toggle_model(current_model, current_question, image):
+        new_model = "blip" if current_model == "llava" else "llava"
+        button_text = "Switch to LLaVA" if new_model == "blip" else "Switch to BLIP"
+        if image is None or current_question == "":
+            return gr.update(value=button_text), new_model, current_question
+        return gr.update(value=button_text), new_model, current_question
+    
+    switch_model_button.click(
+        fn=toggle_model,
+        inputs=[current_model, current_question, input_image],
+        outputs=[switch_model_button, current_model, current_question],
+    ).then(
+        fn=process_with_debug,
+        inputs=[input_image, current_question, current_model],
+        outputs=[output_answer, model_name_display, output_vision_attention, output_text_attention, output_comparison, output_original, debug_output, debug_output, current_model, current_question],
     )
     
     def toggle_debug():
@@ -340,12 +408,13 @@ with gr.Blocks(
     )
     
     clear_button.click(
-        lambda: (None, "", None, None, None, None, "", gr.update(visible=False)),
+        lambda: (None, "", "llava", "llava", "Switch to BLIP", None, None, None, None, "", gr.update(visible=False)),
         inputs=[],
-        outputs=[input_image, input_question, output_answer, output_vision_attention, output_text_attention, output_comparison, output_original, debug_output],
+        outputs=[input_image, input_question, model_choice, current_model, switch_model_button, output_answer, output_vision_attention, output_text_attention, output_comparison, output_original, debug_output],
     )
 
 if __name__ == "__main__":
     # Launch with allowed paths to fix file access issues
     debug_mode = True
-    demo.launch(allowed_paths=[project_root], debug=debug_mode) 
+    demo.queue()  # Simplified queue without concurrency_count
+    demo.launch(allowed_paths=[project_root], debug=debug_mode, share=False) 
