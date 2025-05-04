@@ -11,6 +11,10 @@ from transformers import (
     LlavaForConditionalGeneration
 )
 
+from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
+from rouge_score import rouge_scorer
+import os
+
 class VisionAttentionVisualizer:
     def __init__(self, model_type="llava", model_name=None):
         """
@@ -348,6 +352,28 @@ class VisionAttentionVisualizer:
             print(f"ERROR in get_model_answer: {e}")
             traceback.print_exc()
             return f"Error generating answer: {str(e)}"
+    
+    def evaluate_answer(self, generated_answer, reference_answers):
+        if isinstance(reference_answers, str):
+            reference_answers = [reference_answers]
+
+        reference_tokens = [ref.split() for ref in reference_answers]
+        candidate_tokens = generated_answer.split()
+
+        smoothie = SmoothingFunction().method4
+        bleu = sentence_bleu(reference_tokens, candidate_tokens, smoothing_function=smoothie)
+
+        scorer = rouge_scorer.RougeScorer(['rouge1', 'rougeL'], use_stemmer=True)
+        rouge_scores = [scorer.score(ref, generated_answer) for ref in reference_answers]
+
+        avg_rouge1 = np.mean([score['rouge1'].fmeasure for score in rouge_scores])
+        avg_rougeL = np.mean([score['rougeL'].fmeasure for score in rouge_scores])
+
+        return {
+            "bleu": bleu,
+            "rouge1": avg_rouge1,
+            "rougeL": avg_rougeL
+        }
 
 if __name__ == "__main__":
     # Example usage
@@ -362,6 +388,7 @@ if __name__ == "__main__":
     
     visualizer = VisionAttentionVisualizer(model_type="llava")
     question = "What is the main object in this image?"
+    reference = "A sigle pink rose in a garden setting."
     
     print(f"Processing image: {image_path}")
     image, answer, attention_map = visualizer.process_image_and_question(image_path, question)
