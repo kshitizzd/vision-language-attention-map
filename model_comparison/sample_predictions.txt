@@ -1,0 +1,37 @@
+===== SAMPLE PREDICTIONS =====
+
+Image: 2609797461.jpg
+Reference: A photo showing 3616771728.jpg
+Original model: A photo showing 484199222.jpg, a 208000000.jpg,
+Fine-tuned model: A photo showing 484199222.jpg, a 208000000.jpg,
+
+--------------------------------------------------
+
+Image: 2609797461.jpg
+Reference: A photo showing 522051518.jpg
+Original model: A photo showing 484199222.jpg, a 208000000.jpg,
+Fine-tuned model: A photo showing 484199222.jpg, a 208000000.jpg,
+
+--------------------------------------------------
+
+Image: 2609797461.jpg
+Reference: A photo showing 1306080718.jpg
+Original model: A photo showing 484199222.jpg, a 208000000.jpg,
+Fine-tuned model: A photo showing 484199222.jpg, a 208000000.jpg,
+
+--------------------------------------------------
+
+Image: 2609797461.jpg
+Reference: A photo showing 4961508842.jpg
+Original model: A photo showing 484199222.jpg, a 208000000.jpg,
+Fine-tuned model: A photo showing 484199222.jpg, a 208000000.jpg,
+
+--------------------------------------------------
+
+Image: 2609797461.jpg
+Reference: A photo showing 1045521051.jpg
+Original model: A photo showing 484199222.jpg, a 208000000.jpg,
+Fine-tuned model: A photo showing 484199222.jpg, a 208000000.jpg,
+
+--------------------------------------------------
+

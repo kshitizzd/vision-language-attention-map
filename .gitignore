@@ -1,1 +1,4 @@
 __pycache__
+datasets/
+finetuned_llava_flickr30k/
+original_llava/

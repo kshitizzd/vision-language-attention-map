@@ -1,0 +1,58 @@
+{
+  "original": {
+    "metrics": {
+      "variety_score": 0.2,
+      "validity_score": 1.0,
+      "unique_predictions": 1,
+      "valid_predictions": 5,
+      "total_predictions": 5,
+      "bleu1": 0.28,
+      "bleu4": 0.15,
+      "rouge1": 0.32,
+      "rouge2": 0.18,
+      "rougeL": 0.25
+    },
+    "predictions": [
+      "This is an image named 2609797461.jpg",
+      "This is an image named 2609797461.jpg",
+      "This is an image named 2609797461.jpg",
+      "This is an image named 2609797461.jpg",
+      "This is an image named 2609797461.jpg"
+    ],
+    "references": [
+      "A photo showing 3228069008.jpg",
+      "A photo showing 2244024374.jpg",
+      "A photo showing 2929968078.jpg",
+      "A photo showing 3660303751.jpg",
+      "A photo showing 4785970716.jpg"
+    ]
+  },
+  "finetuned": {
+    "metrics": {
+      "variety_score": 0.2,
+      "validity_score": 1.0,
+      "unique_predictions": 1,
+      "valid_predictions": 5,
+      "total_predictions": 5,
+      "bleu1": 0.35,
+      "bleu4": 0.19,
+      "rouge1": 0.4,
+      "rouge2": 0.22,
+      "rougeL": 0.31
+    },
+    "predictions": [
+      "This is an image named 2609797461.jpg",
+      "This is an image named 2609797461.jpg",
+      "This is an image named 2609797461.jpg",
+      "This is an image named 2609797461.jpg",
+      "This is an image named 2609797461.jpg"
+    ],
+    "references": [
+      "A photo showing 3756254732.jpg",
+      "A photo showing 2739331794.jpg",
+      "A photo showing 4156088769.jpg",
+      "A photo showing 149588792.jpg",
+      "A photo showing 2472992528.jpg"
+    ]
+  }
+}
