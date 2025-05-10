@@ -234,7 +234,7 @@ class VisionAttentionVisualizer:
             return np.random.rand(width, height)
     
     def process_image_and_question(self, image_path, question):
-       """
+        """
         Process the input image and question to get the model's answer and
         generate an attention map highlighting relevant regions in the image
         for the answer.
@@ -244,8 +244,16 @@ class VisionAttentionVisualizer:
             question (str): The question related to the image.
 
         Returns:
-            tuple: A tuple containing the original PIL Image, the model's answer (str),
-                   and the attention map (numpy.ndarray).
+            tuple: (original PIL Image, model's answer (str), attention map (numpy.ndarray))
+
+        Main processing logic:
+            1. Load image
+            2. Get model answer
+            3. Register hooks and run forward/backward for attention
+            4. Generate attention map
+            5. Return results
+
+        Print statements for error/debug only below this point
         """
         print(f"\nProcessing image {image_path} with question: '{question}'")
         try:

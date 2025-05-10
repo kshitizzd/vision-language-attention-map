@@ -237,17 +237,17 @@ with gr.Blocks(
         # Left panel - Input
         with gr.Column(scale=1, elem_classes="card"):
             with gr.Group():
-                gr.Markdown("### 📷 Step 1: Upload an Image")
+                gr.Markdown("### Step 1: Upload an Image")
                 input_image = gr.Image(type="pil", label="", elem_classes="image-display", height=300)
                 
-                gr.Markdown("### 💬 Step 2: Ask a Question")
+                gr.Markdown("### Step 2: Ask a Question")
                 input_question = gr.Textbox(
                     label="", 
                     placeholder="What do you want to ask about this image?",
                     lines=2
                 )
                 
-                gr.Markdown("### 🤖 Step 3: Choose Model")
+                gr.Markdown("### Step 3: Choose Model")
                 model_choice = gr.Radio(
                     ["llava", "blip"], 
                     label="Model", 
@@ -256,17 +256,17 @@ with gr.Blocks(
                 )
                 
                 with gr.Row():
-                    clear_button = gr.Button("🗑️ Clear", variant="secondary", elem_classes="animate-button")
-                    submit_button = gr.Button("✨ Analyze", variant="primary", elem_classes="animate-button")
+                    clear_button = gr.Button("Clear", variant="secondary", elem_classes="animate-button")
+                    submit_button = gr.Button("Analyze", variant="primary", elem_classes="animate-button")
                 
-                gr.Markdown("### ⚡️ Try These Example Questions")
+                gr.Markdown("### Try These Example Questions")
                 gr.Examples(
                     example_questions,
                     inputs=input_question
                 )
                 
                 if len(example_images) > 0:
-                    gr.Markdown("### 🖼️ Example Images")
+                    gr.Markdown("### Example Images")
                     gr.Examples(
                         example_images,
                         inputs=input_image
@@ -275,18 +275,18 @@ with gr.Blocks(
         # Right panel - Output
         with gr.Column(scale=2):
             with gr.Group(elem_classes="card"):
-                output_answer = gr.Textbox(label="🤖 AI Model's Answer", lines=3, elem_classes="highlight")
+                output_answer = gr.Textbox(label="AI Model's Answer", lines=3, elem_classes="highlight")
                 model_name_display = gr.Textbox(label="Current Model", elem_classes="highlight")
                 
                 with gr.Tabs() as tabs:
-                    with gr.TabItem("📊 Attention Overview", elem_classes="tab-item"):
+                    with gr.TabItem("Attention Overview", elem_classes="tab-item"):
                         output_comparison = gr.Image(label="", elem_classes="image-display")
                         gr.Markdown("""
                         This overview shows the original image, the attention heatmap visualization, and the model's response to your question.
                         The heatmap highlights areas the model focused on when answering your question.
                         """)
                     
-                    with gr.TabItem("👁️ Vision Attention", elem_classes="tab-item"):
+                    with gr.TabItem("Vision Attention", elem_classes="tab-item"):
                         with gr.Row():
                             output_original = gr.Image(label="Original Image", elem_classes="image-display")
                             output_vision_attention = gr.Image(label="Attention Heatmap", elem_classes="image-display")
@@ -301,7 +301,7 @@ with gr.Blocks(
                             This visualization helps you understand which parts of the image the AI considered important for answering your specific question.
                             """)
                     
-                    with gr.TabItem("📝 Text Attention", elem_classes="tab-item"):
+                    with gr.TabItem("Text Attention", elem_classes="tab-item"):
                         output_text_attention = gr.Image(label="", elem_classes="image-display")
                         with gr.Accordion("What is Text Attention?", open=False):
                             gr.Markdown("""
@@ -315,7 +315,7 @@ with gr.Blocks(
                 
                 # Button for switching between models on already processed image
                 with gr.Row():
-                    gr.Markdown("### 🔄 Switch models for the current image")
+                    gr.Markdown("### Switch models for the current image")
                     switch_model_button = gr.Button("Switch to BLIP" if current_model.value == "llava" else "Switch to LLaVA", variant="secondary")
     
     # Error output for debugging
